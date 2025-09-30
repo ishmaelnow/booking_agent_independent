@@ -71,9 +71,6 @@ def list_available_drivers():
 
     return drivers
 
-
-
-
 def mark_driver_unavailable(name):
     conn = sqlite3.connect("booking_agent.db")
     cursor = conn.cursor()
@@ -81,6 +78,18 @@ def mark_driver_unavailable(name):
     cursor.execute("""
         UPDATE drivers
         SET available = 0
+        WHERE name = ?
+    """, (name,))
+    conn.commit()
+    conn.close()
+
+def mark_driver_available(name):
+    conn = sqlite3.connect("booking_agent.db")
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE drivers
+        SET available = 1
         WHERE name = ?
     """, (name,))
     conn.commit()

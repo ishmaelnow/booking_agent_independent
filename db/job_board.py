@@ -23,6 +23,17 @@ def create_jobs_table():
         )
     """)
 
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS completed_jobs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            pickup_location TEXT,
+            dropoff_location TEXT,
+            fare_estimate TEXT,
+            driver_name TEXT,
+            completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
     conn.commit()
     conn.close()
 
@@ -58,62 +69,57 @@ def claim_job(job_id, driver_name):
     cursor = conn.cursor()
 
     cursor.execute("""
-        UPDATE jobs
-        SET claimed = 1
-        WHERE id = ? AND driver_name = ?
-    """, (job_id, driver_name))
-
-    conn.commit()
-
-    cursor.execute("""
-        SELECT pickup_location, dropoff_location, fare_estimate, eta_minutes
+        SELECT driver_name, pickup_location, dropoff_location, fare_estimate, eta_minutes
         FROM jobs
         WHERE id = ?
     """, (job_id,))
     job = cursor.fetchone()
 
+    if not job:
+        print("❌ Job not found.")
+        conn.close()
+        return None
+
+    assigned_driver = job[0]
+    if assigned_driver != driver_name:
+        print(f"❌ Driver mismatch: job assigned to {assigned_driver}, not {driver_name}.")
+        conn.close()
+        return None
+
+    cursor.execute("""
+        UPDATE jobs
+        SET claimed = 1
+        WHERE id = ?
+    """, (job_id,))
+    conn.commit()
     conn.close()
 
-    if job:
-        return {
-            "pickup": job[0],
-            "dropoff": job[1],
-            "fare": job[2],
-            "eta": job[3]
-        }
-    return None
+    return {
+        "pickup": job[1],
+        "dropoff": job[2],
+        "fare": job[3],
+        "eta": job[4]
+    }
 
-
-
-
-
-
-def claim_job(job_id, driver_name):
+def complete_job(job_id):
     conn = sqlite3.connect("booking_agent.db")
     cursor = conn.cursor()
 
     cursor.execute("""
-        UPDATE jobs
-        SET claimed = 1
-        WHERE id = ? AND driver_name = ?
-    """, (job_id, driver_name))
-
-    conn.commit()
-
-    cursor.execute("""
-        SELECT pickup_location, dropoff_location, fare_estimate, eta_minutes
+        SELECT pickup_location, dropoff_location, fare_estimate, driver_name
         FROM jobs
         WHERE id = ?
     """, (job_id,))
     job = cursor.fetchone()
 
-    conn.close()
-
     if job:
-        return {
-            "pickup": job[0],
-            "dropoff": job[1],
-            "fare": job[2],
-            "eta": job[3]
-        }
-    return None
+        cursor.execute("""
+            INSERT INTO completed_jobs (
+                pickup_location, dropoff_location, fare_estimate, driver_name
+            ) VALUES (?, ?, ?, ?)
+        """, (job[0], job[1], job[2], job[3]))
+
+        cursor.execute("DELETE FROM jobs WHERE id = ?", (job_id,))
+
+    conn.commit()
+    conn.close()

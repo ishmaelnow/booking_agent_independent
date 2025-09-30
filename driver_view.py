@@ -1,8 +1,6 @@
 import sqlite3
-from db.job_board import claim_job
-from db.driver_registry import mark_driver_unavailable
-# Optional: if you have email confirmation wired
-# from notifications.driver_notifier import notify_driver_claim
+from db.job_board import claim_job, complete_job
+from db.driver_registry import mark_driver_unavailable, mark_driver_available
 
 def list_available_jobs():
     conn = sqlite3.connect("booking_agent.db")
@@ -38,19 +36,30 @@ def prompt_claim():
         print("❌ Invalid job ID.")
         return
 
-    print(f"🔍 Attempting to claim job ID {job_id} for driver '{driver_name}'")  # Debug print
+    print(f"🔍 Attempting to claim job ID {job_id} for driver '{driver_name}'")
 
     job = claim_job(int(job_id), driver_name)
     if job:
         mark_driver_unavailable(driver_name)
-        # Optional: send confirmation email
-        # notify_driver_claim("malik@fleet.com", job)
         print(f"✅ Job {job_id} claimed by {driver_name}")
         print(f"📍 Pickup: {job['pickup']} → 🏁 Dropoff: {job['dropoff']}")
         print(f"💰 Fare: ${job['fare']} | ⏱️ ETA: {job['eta']} minutes")
     else:
         print("❌ Job not found or driver mismatch.")
 
+def prompt_complete():
+    driver_name = input("\nEnter your name to complete a job: ").strip()
+    job_id = input("Enter job ID to complete: ").strip()
+
+    if not job_id.isdigit():
+        print("❌ Invalid job ID.")
+        return
+
+    complete_job(int(job_id))
+    mark_driver_available(driver_name)
+    print(f"✅ Job {job_id} marked complete and archived. {driver_name} is now available.")
+
 if __name__ == "__main__":
     list_available_jobs()
     prompt_claim()
+    prompt_complete()
