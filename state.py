@@ -6,6 +6,7 @@ class BookingState(TypedDict, total=False):
     pickup_location: str
     dropoff_location: str
     ride_time: str
+    rider_name: str
     phone_number: str
 
     # Booking output

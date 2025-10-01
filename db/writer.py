@@ -11,6 +11,7 @@ def save_booking(state):
             pickup TEXT,
             dropoff TEXT,
             ride_time TEXT,
+            rider_name TEXT,
             phone_number TEXT,
             fare TEXT,
             miles REAL,

@@ -1,0 +1,33 @@
+.btn {
+  display: block;
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+  margin-bottom: 1rem;
+}
+
+/* Primary = Green */
+.primary {
+  background-color: #16a34a;
+  color: white;
+}
+
+.primary:hover {
+  background-color: #15803d;
+}
+
+/* Secondary = Blue */
+.secondary {
+  background-color: #2563eb;
+  color: white;
+}
+
+.secondary:hover {
+  background-color: #1e40af;
+}

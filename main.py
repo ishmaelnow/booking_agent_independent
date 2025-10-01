@@ -10,6 +10,7 @@ from notifications.driver_notifier import notify_driver_email
 
 def run_booking_agent():
     print("🚕 Welcome to the Booking Agent")
+    name = input("Enter your name: ")  # ✅ NEW
     pickup = input("Enter pickup location: ")
     dropoff = input("Enter dropoff location: ")
     ride_time = input("Enter desired ride time: ")
@@ -17,6 +18,7 @@ def run_booking_agent():
 
     state = {
         "task": "book a ride",
+        "rider_name": name,  # ✅ NEW
         "pickup_location": pickup,
         "dropoff_location": dropoff,
         "ride_time": ride_time,
@@ -25,7 +27,8 @@ def run_booking_agent():
 
     final_state = app.invoke(state)
 
-    print("\n🚕 Booking Request:")
+    print(f"\n✅ Booking confirmed for {final_state['rider_name']}")
+    print("🚕 Booking Request:")
     print(final_state["booking_request"])
     print("\n💰 Fare Estimate: $" + final_state["fare_estimate"])
     print("🧾 Fare Notes:", final_state["fare_notes"])

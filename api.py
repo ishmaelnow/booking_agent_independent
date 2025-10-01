@@ -9,6 +9,8 @@ from routes.job_api import router as job_router
 from routes.job_view_api import router as job_view_router
 from routes.booking_api import router as booking_router
 from routes.fare_api import router as fare_router  # optional but recommended
+from routes.fare_preview import router as fare_router
+
 
 app = FastAPI(title="Booking Agent API")
 
@@ -28,4 +30,5 @@ app.include_router(driver_router)
 app.include_router(job_router)
 app.include_router(job_view_router)
 app.include_router(booking_router)
+app.include_router(fare_router)
 app.include_router(fare_router)

@@ -1,0 +1,70 @@
+.home-wrapper {
+  min-height: 100vh;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.home-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  max-width: 600px;
+  width: 100%;
+}
+
+.home-header h1 {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.home-header p {
+  margin-top: 0.5rem;
+  font-size: 1.125rem;
+  color: #666;
+}
+
+.home-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  max-width: 600px;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .home-actions {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.home-button {
+  padding: 1rem;
+  border-radius: 8px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.2s ease-in-out;
+}
+
+.home-button.book {
+  background-color: #2563eb;
+}
+
+.home-button.book:hover {
+  background-color: #1e40af;
+}
+
+.home-button.fare {
+  background-color: #16a34a;
+}
+
+.home-button.fare:hover {
+  background-color: #15803d;
+}
