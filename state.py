@@ -1,4 +1,4 @@
-from typing import TypedDict
+from typing import TypedDict, Optional
 
 class BookingState(TypedDict, total=False):
     # Booking input
@@ -24,3 +24,4 @@ class BookingState(TypedDict, total=False):
     vehicle: str
     plate: str
     eta_minutes: int
+    pin: Optional[int] = None

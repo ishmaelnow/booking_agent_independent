@@ -6,7 +6,7 @@ def load_bookings():
 
     cursor.execute("""
         SELECT id, pickup, dropoff, ride_time, rider_name, phone_number,
-               fare, miles, notes, explanation, timestamp
+               fare, miles, notes, explanation, timestamp, pin
         FROM bookings
         ORDER BY timestamp DESC
     """)
@@ -25,7 +25,8 @@ def load_bookings():
             "miles": r[7],
             "notes": r[8],
             "explanation": r[9],
-            "timestamp": r[10]
+            "timestamp": r[10],
+            "pin": r[11]  # ✅ This was missing
         }
         for r in rows
     ]

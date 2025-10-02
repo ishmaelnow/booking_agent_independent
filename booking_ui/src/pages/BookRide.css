@@ -76,3 +76,21 @@
   margin-bottom: 0.5rem;
   color: #15803d;
 }
+
+.primary {
+  background-color: #007bff;
+  color: white;
+  border: none;
+}
+
+.success {
+  background-color: #28a745;
+  color: white;
+  border: none;
+}
+
+.warning {
+  background-color: #ffc107;
+  color: black;
+  border: none;
+}

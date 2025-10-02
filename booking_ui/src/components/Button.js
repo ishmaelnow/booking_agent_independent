@@ -1,7 +1,13 @@
-// src/components/Button.js
-export default function Button({ children, onClick, type = "button", variant = "primary" }) {
+import React from "react";
+import "./Button.css";
+
+export default function Button({ children, onClick, variant = "primary", type = "button" }) {
   return (
-    <button onClick={onClick} type={type} className={`btn ${variant}`}>
+    <button
+      type={type}
+      className={`btn ${variant}`}
+      onClick={onClick}
+    >
       {children}
     </button>
   );

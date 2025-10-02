@@ -1,7 +1,10 @@
-import { Link } from "react-router-dom";
+import {  useNavigate } from "react-router-dom";
 import "./Home.css";
+import Button from "../components/Button";
 
 export default function Home() {
+  const navigate = useNavigate();
+
   return (
     <div className="home-wrapper">
       <header className="home-header">
@@ -10,12 +13,15 @@ export default function Home() {
       </header>
 
       <main className="home-actions">
-        <Link to="/book" className="home-button book">
+        <Button onClick={() => navigate("/book")} variant="primary">
           🚗 Book a Ride
-        </Link>
-        <Link to="/fare-preview" className="home-button fare">
+        </Button>
+        <Button onClick={() => navigate("/history")} variant="secondary">
+          📜 View Ride History
+        </Button>
+        <Button onClick={() => navigate("/fare-preview")} variant="secondary">
           💰 Fare Estimate
-        </Link>
+        </Button>
       </main>
     </div>
   );

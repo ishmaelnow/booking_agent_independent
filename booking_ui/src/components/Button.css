@@ -1,33 +1,53 @@
 .btn {
-  display: block;
-  width: 100%;
-  padding: 0.75rem;
-  font-size: 1rem;
-  font-weight: 600;
-  text-align: center;
+  padding: 0.75rem 1.5rem;
   border-radius: 8px;
-  border: none;
+  font-weight: 600;
+  font-size: 1rem;
   cursor: pointer;
-  transition: background-color 0.2s ease-in-out;
-  margin-bottom: 1rem;
+  transition: background 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }
 
-/* Primary = Green */
+/* Green for Submit */
+.success {
+  background-color: #28a745;
+  color: white;
+  border: none;
+}
+
+/* Blue for Home */
 .primary {
-  background-color: #16a34a;
+  background-color: #007bff;
   color: white;
+  border: none;
 }
 
-.primary:hover {
-  background-color: #15803d;
+/* Yellow for Estimate */
+.warning {
+  background-color: #ffc107;
+  color: black;
+  border: none;
 }
 
-/* Secondary = Blue */
-.secondary {
-  background-color: #2563eb;
+/* Semantic Variants */
+.success {
+  background-color: #28a745; /* Green for Submit */
   color: white;
+  border: none;
 }
 
-.secondary:hover {
-  background-color: #1e40af;
+.primary {
+  background-color: #007bff; /* Blue for Home */
+  color: white;
+  border: none;
+}
+
+.warning {
+  background-color: #ffc107; /* Yellow for Estimate */
+  color: black;
+  border: none;
 }

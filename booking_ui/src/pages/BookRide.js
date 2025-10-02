@@ -17,7 +17,7 @@ export default function BookRide() {
     phone_number: "",
   });
 
-  const [bookingResult, setBookingResult] = useState(null); // ✅ Added
+  const [bookingResult, setBookingResult] = useState(null);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -28,7 +28,7 @@ export default function BookRide() {
 
     try {
       const response = await bookRide(form);
-      setBookingResult(response.data); // ✅ Store full response
+      setBookingResult(response.data);
       console.log("Booking confirmed:", response.data);
     } catch (error) {
       console.error("Submission error:", error);
@@ -38,8 +38,8 @@ export default function BookRide() {
   return (
     <div className="page-wrapper">
       <div className="form-container">
-        <Button variant="secondary" onClick={() => navigate("/")}>
-          ← Back to Home
+        <Button variant="primary" onClick={() => navigate("/")}>
+          🏠 Back to Home
         </Button>
 
         <IconHeader title="Book a Ride" />
@@ -55,16 +55,16 @@ export default function BookRide() {
           />
           <input
             type="text"
-            name="pickup_location" // ✅ corrected
-            value={form.pickup_location} // ✅ corrected
+            name="pickup_location"
+            value={form.pickup_location}
             onChange={handleChange}
             placeholder="Pickup Location"
             required
           />
           <input
             type="text"
-            name="dropoff_location" // ✅ corrected
-            value={form.dropoff_location} // ✅ corrected
+            name="dropoff_location"
+            value={form.dropoff_location}
             onChange={handleChange}
             placeholder="Dropoff Location"
             required
@@ -85,19 +85,25 @@ export default function BookRide() {
             required
           />
 
-          <Button type="submit" variant="primary">
-            Submit
+          <Button type="submit" variant="success">
+            ✅ Submit
           </Button>
         </form>
 
         {bookingResult && (
           <div className="fare-summary">
             <h3>Fare Estimate</h3>
-            <p><strong>From:</strong> {bookingResult.booking.pickup_location}</p>
+            <p><strong>From:</strong> 📍 {bookingResult.booking.pickup_location}</p>
             <p><strong>To:</strong> {bookingResult.booking.dropoff_location}</p>
             <p><strong>Miles:</strong> {bookingResult.booking.estimated_miles} mi</p>
             <p><strong>Estimated Fare:</strong> ${bookingResult.booking.fare_estimate}</p>
             <p><strong>Explanation:</strong> {bookingResult.booking.fare_explanation}</p>
+            
+            {/* ✅ Display the access PIN if present */}
+          {bookingResult.booking.pin && (
+            <p><strong>Access PIN:</strong> 🔒 {bookingResult.booking.pin}</p>
+          )}
+
           </div>
         )}
       </div>
