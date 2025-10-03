@@ -67,4 +67,50 @@
 
 .home-button.fare:hover {
   background-color: #15803d;
+
+}
+
+
+.fleet-showcase {
+  width: var(--card-w);
+  margin: 40px auto;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  border-inline: 4px solid #004aad;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.fleet-showcase h2 {
+  font-size: 2rem;
+  color: #004aad;
+  margin-bottom: 20px;
+}
+
+.fleet-card {
+  margin: 0 auto 20px;
+  width: 80%;
+  max-width: 600px;
+}
+
+.fleet-card img {
+  width: 100%;
+  height: 320px;
+  object-fit: cover;
+  border-radius: 8px;
+  display: block;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.home-section {
+  width: var(--card-w);
+  margin: 40px auto;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  border-inline: 4px solid #004aad;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
 }

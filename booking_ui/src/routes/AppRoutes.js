@@ -5,6 +5,7 @@ import FarePreview from "../pages/FarePreview";
 import JobsView from "../pages/JobsView";
 import BookingHistory from "../pages/BookingHistory";
 import RideHistory from "../pages/RideHistory";
+import FeedbackForm from "../pages/FeedbackForm"; // ✅ New import
 // import CompleteRide from "../pages/CompleteRide"; // 🔒 Driver-only
 
 export default function AppRoutes() {
@@ -16,8 +17,8 @@ export default function AppRoutes() {
         <Route path="/fare-preview" element={<FarePreview />} />
         <Route path="/jobs" element={<JobsView />} />
         <Route path="/bookings" element={<BookingHistory />} />
-        {/* <Route path="/complete" element={<CompleteRide />} /> */}
-        {<Route path="/history" element={<RideHistory />} />}
+        <Route path="/history" element={<RideHistory />} />
+        <Route path="/feedback" element={<FeedbackForm />} /> {/* ✅ New route */}
       </Routes>
     </BrowserRouter>
   );
