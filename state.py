@@ -25,3 +25,8 @@ class BookingState(TypedDict, total=False):
     plate: str
     eta_minutes: int
     pin: Optional[int] = None
+
+      # Feedback input
+    feedback_rating: int
+    feedback_comments: str
+
