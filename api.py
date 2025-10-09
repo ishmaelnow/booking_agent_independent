@@ -28,6 +28,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+
+
 # ✅ Register all routers
 app.include_router(book_router)
 app.include_router(complete_router)
