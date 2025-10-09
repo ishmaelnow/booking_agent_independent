@@ -11,6 +11,11 @@ from routes.booking_api import router as booking_router
 from routes.fare_api import router as fare_api_router
 from routes.fare_preview import router as fare_preview_router
 from routes.feedback import router as feedback_router  # ✅ NEW
+from routes.track_location import router as track_location_router  # ✅ NEW
+from routes.distance import router as distance_router
+from routes.live_tracking import router as live_router
+
+
 
 app = FastAPI(title="Booking Agent API")
 
@@ -33,3 +38,6 @@ app.include_router(booking_router)
 app.include_router(fare_api_router)
 app.include_router(fare_preview_router)
 app.include_router(feedback_router)  # ✅ NEW
+app.include_router(track_location_router)  # ✅ NEW
+app.include_router(distance_router)
+app.include_router(live_router)

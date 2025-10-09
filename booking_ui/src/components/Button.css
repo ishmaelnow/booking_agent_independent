@@ -1,8 +1,10 @@
+/* Base button style */
 .btn {
-  padding: 0.75rem 1.5rem;
+  width: 100%;                     /* ✅ Equal width across grid */
+  padding: 1rem;                   /* Consistent padding */
   border-radius: 8px;
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 1.125rem;
   cursor: pointer;
   transition: background 0.3s ease, transform 0.2s ease;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
@@ -10,44 +12,37 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-}
-
-/* Green for Submit */
-.success {
-  background-color: #28a745;
-  color: white;
+  text-align: center;
+  box-sizing: border-box;
   border: none;
 }
 
-/* Blue for Home */
+/* ✅ Primary (blue) */
 .primary {
   background-color: #007bff;
   color: white;
-  border: none;
 }
 
-/* Yellow for Estimate */
-.warning {
-  background-color: #ffc107;
-  color: black;
-  border: none;
+.primary:hover {
+  background-color: #0056b3;
 }
 
-/* Semantic Variants */
-.success {
-  background-color: #28a745; /* Green for Submit */
+/* ✅ Secondary (green) */
+.secondary {
+  background-color: #16a34a;
   color: white;
-  border: none;
 }
 
-.primary {
-  background-color: #007bff; /* Blue for Home */
+.secondary:hover {
+  background-color: #15803d;
+}
+
+/* ✅ Info (sky blue) */
+.info {
+  background-color: #0ea5e9;
   color: white;
-  border: none;
 }
 
-.warning {
-  background-color: #ffc107; /* Yellow for Estimate */
-  color: black;
-  border: none;
+.info:hover {
+  background-color: #0284c7;
 }

@@ -19,7 +19,6 @@ export default function BookingOptions() {
         <div className="booking-item">
           <h3>🌐 Book Online</h3>
           <p>No smartphone needed, book directly on our website.</p>
-          <Link to="/book" className="btn btn-secondary">Book Now</Link>
         </div>
       </div>
     </section>

@@ -30,8 +30,16 @@ export default function BookRide() {
       const response = await bookRide(form);
       setBookingResult(response.data);
       console.log("Booking confirmed:", response.data);
+      // ✅ Do NOT navigate yet — wait for user to confirm
     } catch (error) {
       console.error("Submission error:", error);
+    }
+  };
+
+  const handleTrackRide = () => {
+    const pin = bookingResult?.booking?.pin;
+    if (pin) {
+      navigate(`/live?pin=${pin}`);
     }
   };
 
@@ -98,12 +106,15 @@ export default function BookRide() {
             <p><strong>Miles:</strong> {bookingResult.booking.estimated_miles} mi</p>
             <p><strong>Estimated Fare:</strong> ${bookingResult.booking.fare_estimate}</p>
             <p><strong>Explanation:</strong> {bookingResult.booking.fare_explanation}</p>
-            
-            {/* ✅ Display the access PIN if present */}
-          {bookingResult.booking.pin && (
-            <p><strong>Access PIN:</strong> 🔒 {bookingResult.booking.pin}</p>
-          )}
 
+            {bookingResult.booking.pin && (
+              <>
+                <p><strong>Access PIN:</strong> 🔒 {bookingResult.booking.pin}</p>
+                <Button variant="primary" onClick={handleTrackRide}>
+                  🚗 Track My Ride
+                </Button>
+              </>
+            )}
           </div>
         )}
       </div>

@@ -1,8 +1,9 @@
+// src/pages/Home.js
 import { useNavigate } from "react-router-dom";
 import "./Home.css";
 import Button from "../components/Button";
 
-// Modular HomeDetails components (re-exported from components/index.js)
+// Modular HomeDetails components
 import {
   HeroSection,
   BookingOptions,
@@ -24,6 +25,10 @@ export default function Home() {
         <p>Plan your ride with ease</p>
       </header>
 
+      <section className="hero-section">
+        <HeroSection />
+      </section>
+
       <main className="home-actions">
         <Button onClick={() => navigate("/book")} variant="primary">
           🚗 Book a Ride
@@ -35,34 +40,29 @@ export default function Home() {
           💰 Fare Estimate
         </Button>
         <Button onClick={() => navigate("/feedback")} variant="secondary">
-  🛠️ Submit Feedback
+          🛠️ Submit Feedback
+        </Button>
+        <Button onClick={() => navigate("/distance")} variant="info">
+          📍 Track Distance
+        </Button>
+        <Button onClick={() => navigate("/live")} variant="info">
+          🛰️ View Live Tracker
         </Button>
       </main>
 
-      {/* Fleet & Coverage Images */}
       <section className="fleet-showcase">
         <h2>🚗 Our Fleet & Coverage</h2>
-
         <div className="fleet-card">
-          <img className="fleet-image" src="/images/carsline.png" alt="Lineup of Cars" />
+          <FleetGallery />
         </div>
-
-        <div className="fleet-card">
-          <img className="fleet-image" src="/images/dfwroads.png" alt="DFW Roadways" />
-        </div>
-      </section>
-
-      {/* Extended HomeDetails Sections */}
-      <section className="home-section">
-        <HeroSection />
       </section>
 
       <section className="home-section">
         <BookingOptions />
       </section>
 
-      <section className="home-section">
-        <FleetGallery />
+      <section className="dfw-area">
+        <img className="fleet-image" src="/images/dfw-areas-hero.png" alt="DFW Sky Line" />
       </section>
 
       <section className="home-section">

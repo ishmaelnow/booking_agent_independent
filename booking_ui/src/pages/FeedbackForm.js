@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import './FeedbackForm.css'; // ✅ Adjust path if needed
+import Button from "../components/Button";
+import { useNavigate } from "react-router-dom"; // ✅ Add this line
 
 const FeedbackForm = () => {
   const [pin, setPin] = useState("");
@@ -7,6 +9,8 @@ const FeedbackForm = () => {
   const [comments, setComments] = useState("");
   const [response, setResponse] = useState(null);
   const [error, setError] = useState(null);
+
+  const navigate = useNavigate(); // ✅ Hook for navigation
 
   const submitFeedback = async () => {
     setError(null);
@@ -59,6 +63,9 @@ const FeedbackForm = () => {
 
       {response && <p className="success">{response}</p>}
       {error && <p className="error">❌ {error}</p>}
+
+      {/* ✅ Back to Home Button */}
+      <Button label="← Back to Home" onClick={() => navigate("/")} />
     </div>
   );
 };
