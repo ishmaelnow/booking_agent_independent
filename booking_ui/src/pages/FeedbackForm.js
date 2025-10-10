@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import './FeedbackForm.css'; // ✅ Adjust path if needed
+import "./FeedbackForm.css";
 import Button from "../components/Button";
-import { useNavigate } from "react-router-dom"; // ✅ Add this line
+import { useNavigate } from "react-router-dom";
+import { submitFeedback } from "../api/feedback"; // ✅ Modular API import
 
 const FeedbackForm = () => {
   const [pin, setPin] = useState("");
@@ -10,29 +11,17 @@ const FeedbackForm = () => {
   const [response, setResponse] = useState(null);
   const [error, setError] = useState(null);
 
-  const navigate = useNavigate(); // ✅ Hook for navigation
+  const navigate = useNavigate();
 
-  const submitFeedback = async () => {
+  const handleSubmit = async () => {
     setError(null);
     setResponse(null);
 
     try {
-      const res = await fetch("http://localhost:8000/book/feedback", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          pin: parseInt(pin),
-          feedback_rating: rating,
-          feedback_comments: comments,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || "Unknown error");
-
-      setResponse(data.confirmation);
+      const res = await submitFeedback(pin, rating, comments);
+      setResponse(res.data.confirmation);
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.detail || "Unexpected error occurred.");
     }
   };
 
@@ -59,12 +48,11 @@ const FeedbackForm = () => {
         onChange={(e) => setComments(e.target.value)}
       />
 
-      <button onClick={submitFeedback}>Submit Feedback</button>
+      <button onClick={handleSubmit}>Submit Feedback</button>
 
       {response && <p className="success">{response}</p>}
       {error && <p className="error">❌ {error}</p>}
 
-      {/* ✅ Back to Home Button */}
       <Button label="← Back to Home" onClick={() => navigate("/")} />
     </div>
   );

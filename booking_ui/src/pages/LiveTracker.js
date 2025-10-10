@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { fetchLiveLocations } from "../api/track"; // ✅ Modular API import
 
 // ✅ Custom Icons
 const riderIcon = L.icon({
@@ -22,7 +22,7 @@ const driverIcon = L.icon({
 
 // ✅ Haversine formula in miles
 const getDistanceMiles = (lat1, lng1, lat2, lng2) => {
-  const R = 3958.8; // Earth radius in miles
+  const R = 3958.8;
   const dLat = (lat2 - lat1) * (Math.PI / 180);
   const dLng = (lng2 - lng1) * (Math.PI / 180);
   const a =
@@ -41,9 +41,9 @@ const LiveTracker = ({ pin }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchLiveLocations = async () => {
+    const loadLocations = async () => {
       try {
-        const res = await axios.get(`http://localhost:8000/track/live?pin=${pin}`);
+        const res = await fetchLiveLocations(pin);
         setLocations(res.data);
         setError(null);
 
@@ -61,8 +61,8 @@ const LiveTracker = ({ pin }) => {
       }
     };
 
-    fetchLiveLocations();
-    const interval = setInterval(fetchLiveLocations, 5000);
+    loadLocations();
+    const interval = setInterval(loadLocations, 5000);
     return () => clearInterval(interval);
   }, [pin]);
 

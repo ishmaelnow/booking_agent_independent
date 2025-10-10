@@ -1,3 +1,6 @@
-import axios from "axios";
-export const getFareEstimate = (miles) =>
-  axios.get(`http://localhost:8000/fare/estimate?miles=${miles}`);
+// src/api/fare.js
+import { api } from "./client";
+
+export const getFareEstimate = (miles) => {
+  return api.get(`/fare/estimate?miles=${miles}`);
+};

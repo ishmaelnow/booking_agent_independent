@@ -1,4 +1,5 @@
-import axios from "axios";
+import { api } from "./client";
 
-export const fetchDistance = (pin) =>
-  axios.post("http://localhost:8000/distance", { pin });
+export const fetchDistance = (pin) => {
+  return api.post("/distance", { pin });
+};
