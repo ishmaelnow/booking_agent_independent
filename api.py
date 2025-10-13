@@ -3,7 +3,8 @@
 # Booking Agent API (FastAPI)
 # - Keeps ALL existing routes & imports intact
 # - Adds safer CORS (env-driven), a lightweight /health route,
-#   optional JSON-style logging, and a sanity check for duplicate routes.
+#   optional JSON-style logging, Swagger UI at /docs, ReDoc at /redoc,
+#   and a sanity check for duplicate routes.
 # ============================================================
 
 from fastapi import FastAPI
@@ -14,7 +15,7 @@ import os
 from typing import List
 
 # Optional: load .env in local dev; prod platforms set env vars differently
-try:  # inline: guard so prod doesn't fail if python-dotenv isn't installed
+try:
     from dotenv import load_dotenv
     load_dotenv()
 except Exception:
@@ -29,52 +30,54 @@ from routes.job_view_api import router as job_view_router
 from routes.booking_api import router as booking_router
 from routes.fare_api import router as fare_api_router
 from routes.fare_preview import router as fare_preview_router
-from routes.feedback import router as feedback_router  # ✅ NEW
-from routes.track_location import router as track_location_router  # ✅ NEW
+from routes.feedback import router as feedback_router
+from routes.track_location import router as track_location_router
 from routes.distance import router as distance_router
 from routes.live_tracking import router as live_router
 from routes.admin import router as admin_router
 from routes.quote import router as quote_router
 
-
-
-
-
 # ------------------------------------------------------------
-# App
+# App with Swagger metadata
 # ------------------------------------------------------------
-app = FastAPI(title="Booking Agent API")  # keep title so existing clients don't break
+app = FastAPI(
+    title="Booking Agent API",
+    description="Modular backend for booking, dispatch, tracking, and fare management.",
+    version="1.0.0",
+    contact={
+        "name": "Coach",
+        "email": "coachishmael@yahoo.com",
+        "url": "https://booking-agent-independent-1.onrender.com"
+    },
+    license_info={
+        "name": "MIT",
+        "url": "https://opensource.org/licenses/MIT"
+    }
+)
 
 # ------------------------------------------------------------
 # CORS (tighten from "*" to env-driven list)
-#   - Do NOT use "*" in production if you send credentials/cookies.
-#   - Configure allowed frontends via CORS_ORIGINS env (CSV).
 # ------------------------------------------------------------
 origins_csv = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000")
 ALLOWED_ORIGINS: List[str] = [o.strip() for o in origins_csv.split(",") if o.strip()]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,   # inline: restrict to your UI(s)
-    allow_credentials=True,          # inline: allow cookies/session if needed later
-    allow_methods=["*"],             # inline: typical for APIs
-    allow_headers=["*"],             # inline: Authorization, Content-Type, etc.
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-# Optional: TrustedHostMiddleware if you want to pin hostnames in prod
-# from starlette.middleware.trustedhost import TrustedHostMiddleware
-# app.add_middleware(TrustedHostMiddleware, allowed_hosts=["yourdomain.com", "localhost", "127.0.0.1"])
-
 # ------------------------------------------------------------
-# Healthcheck (MUST stay dependency-free: no DB/LLM calls)
+# Healthcheck (MUST stay dependency-free)
 # ------------------------------------------------------------
-@app.get("/health")
+@app.get("/health", tags=["System"])
 def health():
-    # inline: keeps uptime checks from cascading failures during DB/LLM issues
     return {"ok": True, "service": "backend"}, 200
 
 # ------------------------------------------------------------
-# Register ALL routers (UNCHANGED ORDER to avoid surprises)
+# Register ALL routers (UNCHANGED ORDER)
 # ------------------------------------------------------------
 app.include_router(book_router)
 app.include_router(complete_router)
@@ -91,10 +94,8 @@ app.include_router(live_router)
 app.include_router(admin_router)
 app.include_router(quote_router)
 
-
 # ------------------------------------------------------------
 # Optional: JSON-ish logging (nice in Render/Heroku logs)
-#   - Safe: only attaches a StreamHandler if none exists.
 # ------------------------------------------------------------
 import logging, json, time
 
@@ -106,22 +107,20 @@ class JsonFormatter(logging.Formatter):
             "logger": record.name,
             "msg": record.getMessage(),
         }
-        # if you later add middleware to enrich records, these will show up
         for k in ("path", "method", "status_code", "request_id"):
             if hasattr(record, k):
                 payload[k] = getattr(record, k)
         return json.dumps(payload, ensure_ascii=False)
 
 _root = logging.getLogger()
-if not _root.handlers:                       # inline: avoid duplicating handlers
+if not _root.handlers:
     _h = logging.StreamHandler()
     _h.setFormatter(JsonFormatter())
     _root.addHandler(_h)
 _root.setLevel(os.getenv("LOG_LEVEL", "INFO").upper())
 
 # ------------------------------------------------------------
-# Optional: Duplicate route detector (warn-only; no behavior change)
-#   - Useful because your route dump showed /bookings/view twice.
+# Optional: Duplicate route detector
 # ------------------------------------------------------------
 def _warn_on_duplicate_paths() -> None:
     try:
@@ -147,4 +146,4 @@ def _warn_on_duplicate_paths() -> None:
     except Exception as e:
         logging.debug(f"route-dup-check failed: {e}")
 
-_warn_on_duplicate_paths()  # inline: log-only; does not modify routing
+_warn_on_duplicate_paths()
