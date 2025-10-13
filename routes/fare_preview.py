@@ -1,30 +1,43 @@
+# routes/fare_preview.py
+# -------------------------------------------------------------------
+# GET /fare/preview?miles=...
+# Light-weight preview: “What would the fare be for X miles?”
+# - Uses the same fare engine as bookings
+# - Returns consistent, customer-friendly wording (no formula dump)
+# -------------------------------------------------------------------
+
+from __future__ import annotations
+
 from fastapi import APIRouter, Query
-from resources.fare_utils import calculate_base_fare
-from langchain_openai import ChatOpenAI
-from langchain_core.prompts import ChatPromptTemplate
+from typing import Optional, Dict, Any
+
+from resources.fare_engine import calculate_base_fare  # returns Decimal
 
 router = APIRouter(prefix="/fare", tags=["Fare Preview"])
 
-llm = ChatOpenAI()
-fare_prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a helpful assistant providing short, practical fare summaries."),
-    ("human", "Give a concise explanation for a taxi fare of ${fare} based on {miles} miles. Emphasize that this is only an estimate and actual cost may vary due to traffic, tolls, and time.")
-])
-fare_chain = fare_prompt | llm
 
-@router.get("/estimate")
-def estimate_fare(miles: float = Query(..., gt=0)):
-    fare = calculate_base_fare(miles)
-    notes = "Standard metered fare applied"
+def _friendly_explanation(miles: float, fare_str: str) -> str:
+    # Match the short phrasing you approved elsewhere
+    return (
+        f"Estimated fare ${fare_str} for about {miles:.2f} miles. "
+        "Final price may vary with traffic, route, and wait time."
+    )
 
-    explanation = fare_chain.invoke({
-        "miles": miles,
-        "fare": fare
-    }).content
 
-    return {
-        "input_miles": miles,
-        "fare_estimate": f"{fare:.2f}",
-        "fare_notes": notes,
-        "fare_explanation": explanation
+@router.get("/preview", summary="Preview a fare for a given distance")
+def preview_fare(
+    miles: float = Query(..., gt=0, description="Assumed trip length in miles"),
+    explain: Optional[bool] = Query(True, description="Include a short natural-language line"),
+) -> Dict[str, Any]:
+    fare = calculate_base_fare(miles)          # Decimal
+    fare_str = f"{fare:.2f}"                   # money stays a string in responses
+
+    response: Dict[str, Any] = {
+        "input_miles": float(miles),
+        "fare_estimate": fare_str,
     }
+
+    if explain:
+        response["fare_explanation"] = _friendly_explanation(miles, fare_str)
+
+    return response

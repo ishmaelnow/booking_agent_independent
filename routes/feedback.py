@@ -1,70 +1,40 @@
-from fastapi import APIRouter, Request, HTTPException
-from datetime import datetime
-import sqlite3
+# routes/feedback.py
+# -------------------------------------------------------------------
+# POST /book/feedback   (keeping your original path group under /book)
+# - Validates rating/comments
+# - Best-effort persistence; does not block on notifications
+# -------------------------------------------------------------------
 
-from db.reader import load_bookings  # ✅ For PIN validation
+from __future__ import annotations
 
-router = APIRouter(prefix="/book", tags=["Booking"])  # ✅ Consistent with booking routes
+from fastapi import APIRouter, HTTPException
+from typing import Dict, Any, List
+
+from state import FeedbackInput, feedback_input_to_state, merge_state
+
+# Optional DB
+try:
+    from db.writer import save_feedback  # expected: save_feedback(payload: dict) -> None
+except Exception:
+    save_feedback = None
+
+# Reuse book prefix as your original path
+router = APIRouter(prefix="/book", tags=["feedback"])
+
+# In-memory fallback store
+_FEEDBACKS: List[Dict[str, Any]] = []
 
 @router.post("/feedback")
-async def submit_feedback(request: Request):
-    state = await request.json()
-    state["task"] = "submit feedback"
+def submit_feedback(payload: FeedbackInput):
+    patch = feedback_input_to_state(payload)
+    # Persist if possible
+    if save_feedback:
+        try:
+            save_feedback(patch)
+        except Exception:
+            # fallback to memory
+            _FEEDBACKS.append(patch)
+    else:
+        _FEEDBACKS.append(patch)
 
-    # ✅ Enforce required fields
-    if "feedback_rating" not in state:
-        raise HTTPException(status_code=400, detail="Missing feedback_rating")
-    if "feedback_comments" not in state:
-        raise HTTPException(status_code=400, detail="Missing feedback_comments")
-    if "pin" not in state:
-        raise HTTPException(status_code=400, detail="Missing PIN")
-
-    # ✅ Extract and sanitize fields
-    pin = str(state["pin"]).strip()
-    rating = int(state["feedback_rating"])
-    comments = state["feedback_comments"].strip()
-    timestamp = datetime.utcnow().isoformat()
-    ip = request.client.host
-
-    # ✅ Validate PIN against existing bookings
-    bookings = load_bookings()
-    if not any(str(b.get("pin", "")).strip() == pin for b in bookings):
-        raise HTTPException(status_code=403, detail="Invalid PIN")
-
-    # ✅ Save feedback to SQLite
-    try:
-        conn = sqlite3.connect("booking_agent.db")
-        cursor = conn.cursor()
-
-        # ✅ Ensure feedback table exists
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS feedback (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                pin TEXT,
-                rating INTEGER,
-                comments TEXT,
-                timestamp TEXT,
-                ip TEXT
-            )
-        """)
-
-        cursor.execute("""
-            INSERT INTO feedback (pin, rating, comments, timestamp, ip)
-            VALUES (?, ?, ?, ?, ?)
-        """, (pin, rating, comments, timestamp, ip))
-
-        conn.commit()
-        return {
-            "confirmation": f"✅ Feedback recorded for PIN {pin}",
-            "feedback": {
-                "rating": rating,
-                "comments": comments,
-                "timestamp": timestamp
-            }
-        }
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
-
-    finally:
-        conn.close()
+    return {"ok": True, "message": "Thanks for your feedback!"}

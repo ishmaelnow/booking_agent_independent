@@ -1,0 +1,10 @@
+id,pickup_location,dropoff_location,rider_name,phone_number,fare_estimate,claimed,driver_id,driver_name
+11,JFK Airport,"Times Square, NYC",Alex,(555) 111-2222,,True,2,Bob
+10,JFK Airport,"Times Square, NYC",Alex,(555) 111-2222,,False,,
+9,JFK Airport,"Times Square, NYC",Alex,(555) 111-2222,,True,2,Bob
+8,"Times Square, NYC",JFK Airport,Sam,(555) 000-1212,,True,1,Alice
+7,JFK Airport,"Times Square, NYC",Alex,(555) 111-2222,,True,2,Bob
+6,"Times Square, NYC",JFK Airport,Sam,(555) 000-1212,,True,1,Alice
+5,Times Square,JFK,Test Rider,(555) 222-3333,,True,2,Bob
+4,Central Park,LaGuardia,Alex,(555) 111-2222,,False,,
+3,Times Square,JFK,Sam,(555) 000-1212,,True,2,Bob

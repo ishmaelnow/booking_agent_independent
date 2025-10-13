@@ -1,34 +1,29 @@
-from fastapi import APIRouter
-import sqlite3
+# routes/fare_api.py
+# -------------------------------------------------------------------
+# GET /fare/estimate?pickup=...&dropoff=...[&explain=true]
+# - Validates query params
+# - Reuses explain_fare_fn (single source of truth)
+# - Returns miles, fare (as string), and optional explanation
+# -------------------------------------------------------------------
 
-router = APIRouter(prefix="/bookings", tags=["Bookings"])
+# routes/fare_api.py
+from __future__ import annotations
 
-@router.get("/view")
-def view_bookings():
-    conn = sqlite3.connect("booking_agent.db")
-    cursor = conn.cursor()
+from typing import Optional, Dict, Any
+from fastapi import APIRouter, Query
 
-    cursor.execute("""
-        SELECT id, pickup, dropoff, ride_time, phone_number, fare, miles, notes, explanation, timestamp
-        FROM bookings
-        ORDER BY timestamp DESC
-    """)
-    bookings = cursor.fetchall()
-    conn.close()
+from resources.fare_helpers import get_fare_quote
 
-    result = []
-    for b in bookings:
-        result.append({
-            "id": b[0],
-            "pickup": b[1],
-            "dropoff": b[2],
-            "ride_time": b[3],
-            "phone": b[4],
-            "fare": b[5],
-            "miles": b[6],
-            "notes": b[7],
-            "explanation": b[8],
-            "timestamp": b[9]
-        })
+router = APIRouter(prefix="/fare", tags=["fare"])
 
-    return {"bookings": result}
+@router.get("/estimate", summary="Get a fare estimate without booking")
+def estimate_fare(
+    pickup: str = Query(..., min_length=2, description="Pickup location"),
+    dropoff: str = Query(..., min_length=2, description="Dropoff location"),
+    explain: Optional[bool] = Query(True, description="Include natural-language explanation"),
+) -> Dict[str, Any]:
+    result = get_fare_quote(pickup, dropoff)
+    if not explain:
+        result.pop("fare_explanation", None)
+    return result
+

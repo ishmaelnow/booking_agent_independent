@@ -1,96 +1,52 @@
-import sqlite3
-import random
+# db/driver_registry.py
+# Purpose: Postgres + PostGIS helpers for driver queries, using pooled connections.
 
-def create_drivers_table():
-    conn = sqlite3.connect("booking_agent.db")
-    cursor = conn.cursor()
+from __future__ import annotations
+from typing import Optional, Dict, Any, List
+from psycopg2.extras import RealDictCursor
+from db.pg import get_conn  # <-- use pooled connection helper
 
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS drivers (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT,
-            vehicle TEXT,
-            plate TEXT,
-            phone TEXT,
-            email TEXT,
-            available BOOLEAN DEFAULT 1
-        )
-    """)
+def list_available_drivers() -> List[Dict[str, Any]]:
+    """Return all currently available drivers (basic listing)."""
+    with get_conn() as conn, conn.cursor(cursor_factory=RealDictCursor) as cur:
+        cur.execute("""
+            SELECT id, name, email, vehicle, plate, is_available
+            FROM drivers
+            WHERE is_available = true
+            ORDER BY id
+        """)
+        rows = cur.fetchall() or []
+        return [dict(r) for r in rows]
 
-    conn.commit()
-    conn.close()
-
-def add_driver(name, vehicle, plate, phone, email):
-    conn = sqlite3.connect("booking_agent.db")
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        INSERT INTO drivers (name, vehicle, plate, phone, email)
-        VALUES (?, ?, ?, ?, ?)
-    """, (name, vehicle, plate, phone, email))
-
-    conn.commit()
-    conn.close()
-
-def get_available_driver():
-    conn = sqlite3.connect("booking_agent.db")
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT name, vehicle, plate, phone, email
+def find_nearest_available_driver(pickup_lng: float, pickup_lat: float) -> Optional[Dict[str, Any]]:
+    """
+    Use PostGIS to compute the nearest available driver to the pickup location.
+    - pickup_lng: longitude (X)
+    - pickup_lat: latitude (Y)
+    Returns a driver row (dict) or None.
+    """
+    sql = """
+        SELECT
+            id, name, email, vehicle, plate,
+            ST_Distance(
+                home_base,
+                ST_SetSRID(ST_MakePoint(%s, %s), 4326)::geography
+            ) AS meters
         FROM drivers
-        WHERE available = 1
-    """)
-    drivers = cursor.fetchall()
-    conn.close()
+        WHERE is_available = true
+          AND home_base IS NOT NULL
+        ORDER BY home_base <-> ST_SetSRID(ST_MakePoint(%s, %s), 4326)
+        LIMIT 1
+    """
+    params = (pickup_lng, pickup_lat, pickup_lng, pickup_lat)
+    with get_conn() as conn, conn.cursor(cursor_factory=RealDictCursor) as cur:
+        cur.execute(sql, params)
+        row = cur.fetchone()
+        return dict(row) if row else None
 
-    if not drivers:
-        return None
+def set_driver_availability(driver_id: int, available: bool) -> None:
+    """Flip a driver's availability bit."""
+    with get_conn() as conn, conn.cursor() as cur:
+        cur.execute("UPDATE drivers SET is_available = %s WHERE id = %s", (available, driver_id))
+        conn.commit()
 
-    selected = random.choice(drivers)
-    return {
-        "name": selected[0],
-        "vehicle": selected[1],
-        "plate": selected[2],
-        "phone": selected[3],
-        "email": selected[4],
-        "eta_minutes": random.randint(5, 12)
-    }
-
-def list_available_drivers():
-    conn = sqlite3.connect("booking_agent.db")
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT id, name, vehicle, plate
-        FROM drivers
-        WHERE available = 1
-    """)
-    drivers = cursor.fetchall()
-    conn.close()
-
-    return drivers
-
-def mark_driver_unavailable(name):
-    conn = sqlite3.connect("booking_agent.db")
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        UPDATE drivers
-        SET available = 0
-        WHERE name = ?
-    """, (name,))
-    conn.commit()
-    conn.close()
-
-def mark_driver_available(name):
-    conn = sqlite3.connect("booking_agent.db")
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        UPDATE drivers
-        SET available = 1
-        WHERE name = ?
-    """, (name,))
-    conn.commit()
-    conn.close()

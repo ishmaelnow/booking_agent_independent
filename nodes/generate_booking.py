@@ -1,10 +1,15 @@
 # nodes/generate_booking.py
+# --------------------------------------------------------------
+# Purpose: produce a human-friendly booking summary string.
+# --------------------------------------------------------------
 
-def generate_booking(state):
-    pickup = state["pickup_location"]
-    dropoff = state["dropoff_location"]
-    ride_time = state["ride_time"]
-    phone = state["phone_number"]
+from typing import Dict, Any
+
+def generate_booking(state: Dict[str, Any]) -> Dict[str, Any]:
+    pickup = (state.get("pickup_location") or "").strip()
+    dropoff = (state.get("dropoff_location") or "").strip()
+    ride_time = (state.get("ride_time") or "").strip()
+    phone = (state.get("phone_number") or "").strip()
 
     request = (
         f"📍 Pickup: {pickup}\n"

@@ -55,3 +55,6 @@ urllib3==2.5.0
 uvicorn==0.37.0
 xxhash==3.5.0
 zstandard==0.25.0
+alembic==<latest>
+SQLAlchemy==2.0.43
+
