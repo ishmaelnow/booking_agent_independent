@@ -13,33 +13,50 @@ export default function BookRide() {
     rider_name: "",
     pickup_location: "",
     dropoff_location: "",
-    ride_time: "",
+    ride_time: "now",            // default that the backend understands
     phone_number: "",
   });
 
-  const [bookingResult, setBookingResult] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [result, setResult] = useState(null); // backend returns a flat object
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true);
+    setError("");
+    setResult(null);
+
+    // Build payload: keep "now" unless user chose a datetime
+    const payload = {
+      ...form,
+      ride_time: form.ride_time && form.ride_time !== "" ? form.ride_time : "now",
+    };
 
     try {
-      const response = await bookRide(form);
-      setBookingResult(response.data);
-      console.log("Booking confirmed:", response.data);
-      // ✅ Do NOT navigate yet — wait for user to confirm
-    } catch (error) {
-      console.error("Submission error:", error);
+      const { data } = await bookRide(payload);
+      setResult(data); // data is { job_id, pin, dispatch_info, fare_estimate, ... }
+      // Do not navigate automatically; user can choose to track.
+    } catch (err) {
+      console.error("Submission error:", err);
+      const msg =
+        err?.response?.data?.detail ||
+        err?.message ||
+        "Something went wrong while booking your ride.";
+      setError(msg);
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const handleTrackRide = () => {
-    const pin = bookingResult?.booking?.pin;
-    if (pin) {
-      navigate(`/live?pin=${pin}`);
+    if (result?.pin) {
+      navigate(`/live?pin=${encodeURIComponent(result.pin)}`);
     }
   };
 
@@ -61,6 +78,7 @@ export default function BookRide() {
             placeholder="Passenger Name"
             required
           />
+
           <input
             type="text"
             name="pickup_location"
@@ -69,6 +87,7 @@ export default function BookRide() {
             placeholder="Pickup Location"
             required
           />
+
           <input
             type="text"
             name="dropoff_location"
@@ -77,13 +96,17 @@ export default function BookRide() {
             placeholder="Dropoff Location"
             required
           />
+
+          {/* If you want to let the user choose a time, leave this input.
+              Otherwise, keep "now" as the default and hide this input. */}
           <input
-            type="datetime-local"
+            type="text"
             name="ride_time"
             value={form.ride_time}
             onChange={handleChange}
-            required
+            placeholder='Ride Time (e.g., "now" or 2025-10-13T08:30)'
           />
+
           <input
             type="tel"
             name="phone_number"
@@ -93,23 +116,80 @@ export default function BookRide() {
             required
           />
 
-          <Button type="submit" variant="success">
-            ✅ Submit
+          <Button type="submit" variant="success" disabled={submitting}>
+            {submitting ? "Submitting…" : "✅ Submit"}
           </Button>
         </form>
 
-        {bookingResult && (
-          <div className="fare-summary">
-            <h3>Fare Estimate</h3>
-            <p><strong>From:</strong> 📍 {bookingResult.booking.pickup_location}</p>
-            <p><strong>To:</strong> {bookingResult.booking.dropoff_location}</p>
-            <p><strong>Miles:</strong> {bookingResult.booking.estimated_miles} mi</p>
-            <p><strong>Estimated Fare:</strong> ${bookingResult.booking.fare_estimate}</p>
-            <p><strong>Explanation:</strong> {bookingResult.booking.fare_explanation}</p>
+        {error && (
+          <div className="error-box" role="alert" style={{ marginTop: 12 }}>
+            {error}
+          </div>
+        )}
 
-            {bookingResult.booking.pin && (
+        {result && (
+          <div className="fare-summary" style={{ marginTop: 16 }}>
+            <h3>Ride Summary</h3>
+
+            {/* Core ride + dispatch info */}
+            {result.job_id && (
+              <p>
+                <strong>Job ID:</strong> {result.job_id}
+              </p>
+            )}
+
+            {result.dispatch_info && (
+              <p style={{ whiteSpace: "pre-line" }}>
+                <strong>Dispatch:</strong> {result.dispatch_info}
+              </p>
+            )}
+
+            {(result.driver_name || result.vehicle || result.plate) && (
+              <p>
+                <strong>Driver:</strong>{" "}
+                {[
+                  result.driver_name,
+                  result.vehicle && `(${result.vehicle}`,
+                  result.plate && `${result.vehicle ? "," : "("} ${result.plate}`,
+                ]
+                  .filter(Boolean)
+                  .join(" ")
+                  .replace(/\s+\(/, " (")}
+                {result.vehicle || result.plate ? ")" : ""}
+              </p>
+            )}
+
+            {typeof result.eta_minutes === "number" && (
+              <p>
+                <strong>ETA:</strong> {result.eta_minutes} minutes
+              </p>
+            )}
+
+            {/* Fare details */}
+            {typeof result.estimated_miles !== "undefined" && (
+              <p>
+                <strong>Miles:</strong> {result.estimated_miles} mi
+              </p>
+            )}
+
+            {typeof result.fare_estimate !== "undefined" && (
+              <p>
+                <strong>Estimated Fare:</strong> ${result.fare_estimate}
+              </p>
+            )}
+
+            {result.fare_explanation && (
+              <p>
+                <strong>Note:</strong> {result.fare_explanation}
+              </p>
+            )}
+
+            {/* Tracking PIN */}
+            {result.pin && (
               <>
-                <p><strong>Access PIN:</strong> 🔒 {bookingResult.booking.pin}</p>
+                <p>
+                  <strong>Access PIN:</strong> 🔒 {result.pin}
+                </p>
                 <Button variant="primary" onClick={handleTrackRide}>
                   🚗 Track My Ride
                 </Button>

@@ -1,4 +1,3 @@
-// src/pages/Home.js
 import { useNavigate } from "react-router-dom";
 import "./Home.css";
 import Button from "../components/Button";
@@ -30,6 +29,7 @@ export default function Home() {
       </section>
 
       <main className="home-actions">
+        {/* 🧍 Rider Actions */}
         <Button onClick={() => navigate("/book")} variant="primary">
           🚗 Book a Ride
         </Button>
@@ -42,11 +42,27 @@ export default function Home() {
         <Button onClick={() => navigate("/feedback")} variant="secondary">
           🛠️ Submit Feedback
         </Button>
+        <Button onClick={() => navigate("/stand-alone")} variant="secondary">
+          🚗 Standalone Booking
+        </Button>
+
+        {/* 📡 Tracking Tools */}
         <Button onClick={() => navigate("/distance")} variant="info">
           📍 Track Distance
         </Button>
         <Button onClick={() => navigate("/live")} variant="info">
           🛰️ View Live Tracker
+        </Button>
+
+        {/* 🧪 Admin & Debug */}
+        <Button onClick={() => navigate("/test-ping")} variant="warning">
+          🧪 Backend Ping Test
+        </Button>
+        <Button onClick={() => navigate("/jobs")} variant="warning">
+          🧾 View Job Queue
+        </Button>
+        <Button onClick={() => navigate("/bookings")} variant="warning">
+          📦 Booking History
         </Button>
       </main>
 
@@ -84,6 +100,7 @@ export default function Home() {
       <section className="home-section">
         <AccessibilityInfo />
       </section>
+      
     </div>
   );
 }

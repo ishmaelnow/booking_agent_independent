@@ -9,6 +9,8 @@ import FeedbackForm from "../pages/FeedbackForm"; // ✅ New import
 // import CompleteRide from "../pages/CompleteRide"; // 🔒 Driver-only
 import DistanceTracker from "../pages/DistanceTracker";
 import LiveTracker from "../pages/LiveTracker"; // ✅ New import
+import TestBackendPing from "../pages/TestBackendPing"; // ✅ Diagnostic route
+import BookRideStandalone from "../pages/BookRideStandalone"; // For testing
 
 export default function AppRoutes() {
   return (
@@ -23,6 +25,10 @@ export default function AppRoutes() {
         <Route path="/feedback" element={<FeedbackForm />} /> {/* ✅ New route */}
         <Route path="/distance" element={<DistanceTracker />} />
         <Route path="/live" element={<LiveTracker pin={985217} />} /> {/* ✅ New route */}
+        <Route path="/test-ping" element={<TestBackendPing />} /> {/* ✅ Diagnostic route */}
+        {/* <Route path="/complete-ride" element={<CompleteRide />} />  🔒 Driver-only */}
+        <Route path="/stand-alone" element={<BookRideStandalone />} /> {/* For testing */}
+
       </Routes>
     </BrowserRouter>
   );

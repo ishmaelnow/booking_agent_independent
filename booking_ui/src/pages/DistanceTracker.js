@@ -2,14 +2,16 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import IconHeader from "../components/IconHeader";
 import Button from "../components/Button";
-import { fetchDistance } from "../api/distance";
+import { fetchDistance } from "../api/distance"; // ✅ Centralized axios call
 import "../components/Button.css";
-import "./DistanceTracker.css"; // Optional: create for styling
+import "./DistanceTracker.css";
 
 export default function DistanceTracker() {
   const navigate = useNavigate();
+
   const [pin, setPin] = useState("");
   const [distance, setDistance] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
@@ -17,11 +19,31 @@ export default function DistanceTracker() {
     setError("");
     setDistance(null);
 
+    if (!/^\d+$/.test(pin)) {
+      setError("PIN must be numeric.");
+      return;
+    }
+
     try {
-      const response = await fetchDistance(parseInt(pin));
-      setDistance(response.data.distance_meters);
+      setLoading(true);
+      const response = await fetchDistance(Number(pin));
+      console.log("Distance response:", response.data);
+
+      const meters = response?.data?.distance_meters;
+      if (typeof meters !== "number") {
+        throw new Error("Malformed response: distance_meters missing.");
+      }
+
+      setDistance(meters);
     } catch (err) {
-      setError(err.response?.data?.detail || "Unexpected error occurred.");
+      console.error("Distance fetch error:", err);
+      const msg =
+        err?.response?.data?.detail ||
+        err?.message ||
+        "Unexpected error occurred.";
+      setError(msg);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -36,27 +58,32 @@ export default function DistanceTracker() {
 
         <form onSubmit={handleSubmit} className="distance-form">
           <input
-            type="number"
+            type="text"
+            inputMode="numeric"
+            pattern="\d*"
             placeholder="Enter Access PIN"
             value={pin}
-            onChange={(e) => setPin(e.target.value)}
+            onChange={(e) => setPin(e.target.value.trim())}
             required
           />
-          <Button type="submit" variant="success">
-            ✅ Check Distance
+
+          <Button type="submit" variant="success" disabled={loading}>
+            {loading ? "Checking…" : "✅ Check Distance"}
           </Button>
         </form>
 
         {distance !== null && (
-          <div className="result">
+          <div className="result" style={{ marginTop: 12 }}>
             <h3>Distance Result</h3>
-            <p>🛣️ <strong>{distance.toFixed(2)} meters</strong></p>
+            <p>
+              🛣️ <strong>{distance.toFixed(2)} meters</strong>
+            </p>
           </div>
         )}
 
         {error && (
-          <div className="error">
-            <p>⚠️ {error}</p>
+          <div className="error" role="alert" style={{ marginTop: 12 }}>
+            ⚠️ {error}
           </div>
         )}
       </div>

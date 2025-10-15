@@ -1,38 +1,54 @@
 import React, { useState } from "react";
-import './FeedbackForm.css'; // ✅ Adjust path if needed
+import "./FeedbackForm.css";
 import Button from "../components/Button";
-import { useNavigate } from "react-router-dom"; // ✅ Add this line
+import { useNavigate } from "react-router-dom";
+import api from "../api/booking"; // ✅ Centralized axios instance
 
 const FeedbackForm = () => {
+  const navigate = useNavigate();
+
   const [pin, setPin] = useState("");
   const [rating, setRating] = useState(5);
   const [comments, setComments] = useState("");
+
+  const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState(null);
   const [error, setError] = useState(null);
-
-  const navigate = useNavigate(); // ✅ Hook for navigation
 
   const submitFeedback = async () => {
     setError(null);
     setResponse(null);
 
+    if (!/^\d+$/.test(pin)) {
+      setError("PIN must be numeric.");
+      return;
+    }
+
     try {
-      const res = await fetch("http://localhost:8000/book/feedback", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          pin: parseInt(pin),
-          feedback_rating: rating,
-          feedback_comments: comments,
-        }),
-      });
+      setLoading(true);
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || "Unknown error");
+      const payload = {
+        pin: Number(pin),
+        feedback_rating: Number(rating),
+        feedback_comments: comments?.trim() ?? "",
+      };
 
-      setResponse(data.confirmation);
+      const res = await api.post("/book/feedback", payload);
+      const confirmation = res?.data?.confirmation || "Thanks! Your feedback was recorded.";
+
+      setResponse(confirmation);
+      setComments("");
+      setPin("");
+      setRating(5);
     } catch (err) {
-      setError(err.message);
+      console.error("Feedback error:", err);
+      const msg =
+        err?.response?.data?.detail ||
+        err?.message ||
+        "Unexpected error submitting feedback.";
+      setError(msg);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -41,15 +57,22 @@ const FeedbackForm = () => {
       <h2>📝 Submit Ride Feedback</h2>
 
       <input
-        type="number"
+        type="text"
+        inputMode="numeric"
+        pattern="\d*"
         placeholder="Enter your PIN"
         value={pin}
-        onChange={(e) => setPin(e.target.value)}
+        onChange={(e) => setPin(e.target.value.trim())}
       />
 
-      <select value={rating} onChange={(e) => setRating(parseInt(e.target.value))}>
+      <select
+        value={rating}
+        onChange={(e) => setRating(parseInt(e.target.value, 10))}
+      >
         {[5, 4, 3, 2, 1].map((r) => (
-          <option key={r} value={r}>{r} Stars</option>
+          <option key={r} value={r}>
+            {r} Stars
+          </option>
         ))}
       </select>
 
@@ -59,12 +82,13 @@ const FeedbackForm = () => {
         onChange={(e) => setComments(e.target.value)}
       />
 
-      <button onClick={submitFeedback}>Submit Feedback</button>
+      <button onClick={submitFeedback} disabled={loading}>
+        {loading ? "Submitting…" : "Submit Feedback"}
+      </button>
 
-      {response && <p className="success">{response}</p>}
+      {response && <p className="success">✅ {response}</p>}
       {error && <p className="error">❌ {error}</p>}
 
-      {/* ✅ Back to Home Button */}
       <Button label="← Back to Home" onClick={() => navigate("/")} />
     </div>
   );
