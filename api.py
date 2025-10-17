@@ -39,6 +39,7 @@ from routes.quote import router as quote_router
 from routes.auth import router as auth_router
 from routes.driver_api import router as driver_router
 from routes.driver_pin import router as driver_pin_router
+from routes.job_pin import router as job_pin_router
 
 
 # ------------------------------------------------------------
@@ -100,6 +101,7 @@ app.include_router(quote_router)
 app.include_router(auth_router)
 app.include_router(driver_router)
 app.include_router(driver_pin_router)
+app.include_router(job_pin_router)
 
 # ------------------------------------------------------------
 # Optional: JSON-ish logging (nice in Render/Heroku logs)

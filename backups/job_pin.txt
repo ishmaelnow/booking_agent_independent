@@ -1,0 +1,59 @@
+# routes/job_pin.py
+# -------------------------------------------------------------------
+# POST /jobs/driver-pin/verify
+#  - Body: { "job_id": <int>, "driver_pin": "<string>" }
+#  - Verifies the stored pin matches and is not expired.
+#  - Returns 200 with { ok: true, job_id, status: "valid" } on success
+#    or 401 with { detail: "...reason..." } on failure.
+# -------------------------------------------------------------------
+from __future__ import annotations
+
+from datetime import datetime, timezone
+from typing import Any, Dict
+
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel, Field
+
+from db.pg import get_conn
+
+router = APIRouter(prefix="/jobs", tags=["driver-pin"])
+
+class VerifyRequest(BaseModel):
+    job_id: int = Field(..., description="Job ID to verify")
+    driver_pin: str = Field(..., min_length=1, max_length=12, description="Driver's PIN")
+
+@router.post("/driver-pin/verify")
+def verify_driver_pin(payload: VerifyRequest) -> Dict[str, Any]:
+    job_id = payload.job_id
+    pin_in = payload.driver_pin.strip()
+
+    with get_conn() as conn, conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT driver_pin, driver_pin_expires
+            FROM jobs
+            WHERE id = %s
+            """,
+            (job_id,),
+        )
+        row = cur.fetchone()
+
+    if not row:
+        raise HTTPException(status_code=404, detail="job not found")
+
+    stored_pin, expires_at = row[0], row[1]
+
+    if not stored_pin:
+        raise HTTPException(status_code=401, detail="no driver pin issued for this job")
+    if pin_in != stored_pin:
+        raise HTTPException(status_code=401, detail="invalid pin")
+    if expires_at is None:
+        raise HTTPException(status_code=401, detail="pin has no expiry; reject for safety")
+
+    # Normalize "now" as timezone-aware UTC
+    now_utc = datetime.now(timezone.utc)
+    # expires_at is timestamptz; psycopg returns aware datetimes -> safe to compare
+    if expires_at <= now_utc:
+        raise HTTPException(status_code=401, detail="pin expired")
+
+    return {"ok": True, "job_id": job_id, "status": "valid"}
