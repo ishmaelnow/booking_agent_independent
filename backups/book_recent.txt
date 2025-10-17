@@ -7,7 +7,6 @@
 # - Runs the LangGraph pipeline (generate -> explain -> dispatch)
 # - Returns a concise rider-friendly payload (incl. fare fields)
 # - Notifications are non-blocking (file log + operator email + driver email)
-# - NEW: Auto-issue a short-lived DRIVER PIN (stored in DB; not returned)
 # -------------------------------------------------------------------
 
 from __future__ import annotations
@@ -27,11 +26,6 @@ from notifications.notifier import notify_operator
 from notifications.email_notifier import notify_operator_email
 from notifications.driver_notifier import notify_driver_email
 
-# --- NEW imports for driver PIN issuance ---
-import os
-import secrets
-from datetime import datetime, timedelta, timezone
-
 # Optional DB layer (Postgres helpers); fallback to memory in dev
 try:
     # writer provides both create_job() and list_bookings()
@@ -39,12 +33,6 @@ try:
 except Exception:
     create_job = None
     list_bookings = None
-
-# For updating the just-created job with the driver PIN
-try:
-    from db.pg import get_conn  # used in the driver-pin update step
-except Exception:
-    get_conn = None  # in-memory fallback case
 
 router = APIRouter(prefix="/book", tags=["book"])
 
@@ -77,7 +65,7 @@ def _list_bookings(limit: int, offset: int) -> List[Dict[str, Any]]:
             return list_bookings(limit=limit, offset=offset)
         except Exception:
             pass
-    return _FALLBACK_BOOKINGS[offset: offset + limit]
+    return _FALLBACK_BOOKINGS[offset : offset + limit]
 
 
 @router.post("/ride", status_code=status.HTTP_201_CREATED)
@@ -88,9 +76,8 @@ def create_ride(payload: BookingInput, background: BackgroundTasks):
       2) persist to DB to get job_id (so dispatch can update it)
       3) add a short numeric pin (string; keeps leading zeros)
       4) run the booking graph (generate -> explain -> dispatch)
-      5) auto-issue a short-lived DRIVER PIN (stored in DB; hidden from rider)
-      6) enqueue notifications (file log + operator email + driver email if assigned)
-      7) return a concise rider-facing response (incl. fare fields)
+      5) enqueue notifications (file log + operator email + driver email if assigned)
+      6) return a concise rider-facing response (incl. fare fields)
     """
     # 1) Start state from request
     state = booking_input_to_state(payload)
@@ -119,47 +106,7 @@ def create_ride(payload: BookingInput, background: BackgroundTasks):
             },
         )
 
-    # 5) NEW: Auto-issue a short-lived DRIVER PIN (separate from rider PIN)
-    #    - Controlled by env:
-    #        DRIVER_PIN_MODE: "separate" (default) | "same"
-    #        DRIVER_PIN_TTL_MINUTES: default "30"
-    #    - Stored in jobs.driver_pin / jobs.driver_pin_expires
-    try:
-        mode = os.getenv("DRIVER_PIN_MODE", "separate").lower()
-        ttl_min = int(os.getenv("DRIVER_PIN_TTL_MINUTES", "30"))
-
-        if mode == "same":
-            driver_pin = str(pin).zfill(6)[:6]
-        else:
-            # 000000–999999 as a string, zero-padded to 6
-            driver_pin = f"{secrets.randbelow(1_000_000):06d}"
-
-        expires_at = datetime.now(timezone.utc) + timedelta(minutes=ttl_min)
-
-        # Only attempt DB update if we have a DB connection helper and numeric id
-        if get_conn and job_id_str.isdigit():
-            with get_conn() as conn, conn.cursor() as cur:
-                cur.execute(
-                    """
-                    UPDATE jobs
-                       SET driver_pin = %s,
-                           driver_pin_expires = %s
-                     WHERE id = %s
-                    """,
-                    (driver_pin, expires_at, int(job_id_str)),
-                )
-                conn.commit()
-            state["driver_pin_issued"] = True
-        else:
-            # In-memory mode: store on the state row so you can inspect if needed (not returned)
-            state["driver_pin"] = driver_pin
-            state["driver_pin_expires"] = expires_at.isoformat()
-            state["driver_pin_issued"] = True
-    except Exception:
-        # Never break booking flow because of driver-pin issuance
-        state["driver_pin_issued"] = False
-
-    # 6) Background notifications (best-effort; never block the response)
+    # 5) Background notifications (best-effort; never block the response)
     #    - operator file log
     #    - operator email (if EMAIL_* configured)
     #    - driver email (only if a driver was assigned; also requires EMAIL_* configured)
@@ -181,8 +128,7 @@ def create_ride(payload: BookingInput, background: BackgroundTasks):
 
     background.add_task(_notify_async, dict(state))
 
-    # 7) Return a concise rider-friendly payload, including fare info
-    #    (Intentionally DO NOT include driver_pin in this response.)
+    # 6) Return a concise rider-friendly payload, including fare info
     return {
         "job_id": job_id_str,
         "pin": pin,

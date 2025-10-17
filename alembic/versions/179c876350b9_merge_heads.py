@@ -1,28 +1,19 @@
-"""merge heads
-
-Revision ID: 179c876350b9
-Revises: 59320f0e4f92, add_driver_pin_to_jobs
-Create Date: 2025-10-15 05:50:38.244345
-
-"""
+# alembic/versions/179c876350b9_merge_heads.py
+from __future__ import annotations
 from typing import Sequence, Union
-
 from alembic import op
 import sqlalchemy as sa
 
-
-# revision identifiers, used by Alembic.
-revision: str = '179c876350b9'
-down_revision: Union[str, Sequence[str], None] = ('59320f0e4f92', 'add_driver_pin_to_jobs')
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
-
+# This is a NO-OP merge revision that just linearizes history.
+revision: str = "179c876350b9"
+down_revision: Union[str, Sequence[str], None] = "59320f0e4f92"
+branch_labels = None
+depends_on = None
 
 def upgrade() -> None:
-    """Upgrade schema."""
+    # merge point only; no schema changes
     pass
 
-
 def downgrade() -> None:
-    """Downgrade schema."""
+    # merge point only; no schema changes
     pass

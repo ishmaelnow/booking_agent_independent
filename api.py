@@ -36,6 +36,10 @@ from routes.distance import router as distance_router
 from routes.live_tracking import router as live_router
 from routes.admin import router as admin_router
 from routes.quote import router as quote_router
+from routes.auth import router as auth_router
+from routes.driver_api import router as driver_router
+from routes.driver_pin import router as driver_pin_router
+
 
 # ------------------------------------------------------------
 # App with Swagger metadata
@@ -93,6 +97,9 @@ app.include_router(distance_router)
 app.include_router(live_router)
 app.include_router(admin_router)
 app.include_router(quote_router)
+app.include_router(auth_router)
+app.include_router(driver_router)
+app.include_router(driver_pin_router)
 
 # ------------------------------------------------------------
 # Optional: JSON-ish logging (nice in Render/Heroku logs)
