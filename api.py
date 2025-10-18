@@ -61,9 +61,12 @@ app = FastAPI(
 )
 
 # ------------------------------------------------------------
-# CORS (tighten from "*" to env-driven list)
+# CORS (env-driven, fallback to dev + prod domains)
 # ------------------------------------------------------------
-origins_csv = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000")
+origins_csv = os.getenv(
+    "CORS_ORIGINS",
+    "http://localhost:5173,http://localhost:3000,https://booking-interface-5b4onrender.com"
+)
 ALLOWED_ORIGINS: List[str] = [o.strip() for o in origins_csv.split(",") if o.strip()]
 
 app.add_middleware(
