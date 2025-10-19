@@ -1,10 +1,8 @@
 # api.py
 # ============================================================
 # Booking Agent API (FastAPI)
-# - Keeps ALL existing routes & imports intact
-# - Adds safer CORS (env-driven), a lightweight /health route,
-#   optional JSON-style logging, Swagger UI at /docs, ReDoc at /redoc,
-#   and a sanity check for duplicate routes.
+# - Safer CORS (env-driven), /health, JSON-style logging,
+#   Swagger UI at /docs, ReDoc at /redoc, duplicate-route check.
 # ============================================================
 
 from fastapi import FastAPI
@@ -14,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 from typing import List
 
-# Optional: load .env in local dev; prod platforms set env vars differently
+# Optional: load .env locally; prod platforms set env vars themselves
 try:
     from dotenv import load_dotenv
     load_dotenv()
@@ -37,10 +35,8 @@ from routes.live_tracking import router as live_router
 from routes.admin import router as admin_router
 from routes.quote import router as quote_router
 from routes.auth import router as auth_router
-from routes.driver_api import router as driver_router
 from routes.driver_pin import router as driver_pin_router
 from routes.job_pin import router as job_pin_router
-
 
 # ------------------------------------------------------------
 # App with Swagger metadata
@@ -52,41 +48,48 @@ app = FastAPI(
     contact={
         "name": "Coach",
         "email": "coachishmael@yahoo.com",
-        "url": "https://booking-agent-api-f0d6.onrender.com"
+        "url": "https://booking-agent-api-f0d6.onrender.com",
     },
     license_info={
         "name": "MIT",
-        "url": "https://opensource.org/licenses/MIT"
-    }
+        "url": "https://opensource.org/licenses/MIT",
+    },
 )
 
 # ------------------------------------------------------------
 # CORS (env-driven, fallback to dev + prod domains)
 # ------------------------------------------------------------
+# IMPORTANT: Keep NO trailing slash in origins.
 origins_csv = os.getenv(
     "CORS_ORIGINS",
-    "http://localhost:5173,http://localhost:3000,https://booking-interface-tbd4.onrender.com"
+    "http://localhost:5173,http://localhost:3000,https://booking-interface-tbd4.onrender.com",
 )
 ALLOWED_ORIGINS: List[str] = [o.strip() for o in origins_csv.split(",") if o.strip()]
 
+# (Optional) log what we actually allow (handy on Render logs)
+import logging
+logger = logging.getLogger("uvicorn.error")
+logger.info(f"ALLOWED_ORIGINS: {ALLOWED_ORIGINS}")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
-    allow_credentials=True,   # fine; just don’t use "*"
+    allow_origins=ALLOWED_ORIGINS,                    # exact matches
+    allow_origin_regex=r"https://booking-interface-[a-z0-9]+\.onrender\.com",
+    allow_credentials=True,                           # ok; do not use "*" with this
     allow_methods=["*"],
     allow_headers=["*"],
+    # expose_headers=[]  # add if the frontend needs to read custom response headers
 )
 
- 
 # ------------------------------------------------------------
-# Healthcheck (MUST stay dependency-free)
+# Healthcheck (dependency-free)
 # ------------------------------------------------------------
 @app.get("/health", tags=["System"])
 def health():
-    return {"ok": True, "service": "backend"}, 200
+    return {"ok": True, "service": "backend"}
 
 # ------------------------------------------------------------
-# Register ALL routers (UNCHANGED ORDER)
+# Register ALL routers (UNCHANGED ORDER; removed duplicate driver_router)
 # ------------------------------------------------------------
 app.include_router(book_router)
 app.include_router(complete_router)
@@ -103,15 +106,14 @@ app.include_router(live_router)
 app.include_router(admin_router)
 app.include_router(quote_router)
 app.include_router(auth_router)
-app.include_router(driver_router)
 app.include_router(driver_pin_router)
 app.include_router(job_pin_router)
 
 # ------------------------------------------------------------
 # Optional: JSON-ish logging (nice in Render/Heroku logs)
 # ------------------------------------------------------------
-import logging, json, time
-
+import json, time
+_root = logging.getLogger()
 class JsonFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
         payload = {
@@ -125,7 +127,6 @@ class JsonFormatter(logging.Formatter):
                 payload[k] = getattr(record, k)
         return json.dumps(payload, ensure_ascii=False)
 
-_root = logging.getLogger()
 if not _root.handlers:
     _h = logging.StreamHandler()
     _h.setFormatter(JsonFormatter())
