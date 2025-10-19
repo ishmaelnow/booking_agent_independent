@@ -52,7 +52,7 @@ app = FastAPI(
     contact={
         "name": "Coach",
         "email": "coachishmael@yahoo.com",
-        "url": "https://booking-agent-independent-1.onrender.com"
+        "url": "https://booking-agent-api-f0d6.onrender.com"
     },
     license_info={
         "name": "MIT",
@@ -65,18 +65,19 @@ app = FastAPI(
 # ------------------------------------------------------------
 origins_csv = os.getenv(
     "CORS_ORIGINS",
-    "http://localhost:5173,http://localhost:3000,https://booking-interface-5b4onrender.com"
+    "http://localhost:5173,http://localhost:3000,https://booking-interface-tbd4.onrender.com"
 )
 ALLOWED_ORIGINS: List[str] = [o.strip() for o in origins_csv.split(",") if o.strip()]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
-    allow_credentials=True,
+    allow_credentials=True,   # fine; just don’t use "*"
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+ 
 # ------------------------------------------------------------
 # Healthcheck (MUST stay dependency-free)
 # ------------------------------------------------------------

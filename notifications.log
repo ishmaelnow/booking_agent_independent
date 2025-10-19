@@ -279,3 +279,57 @@
 🧾 Notes: Standard metered fare applied
 🧠 Explanation: Estimated fare $21.17 for about 6.5 miles from 8888 PARK LANE, DALLAS, TX to 902 COIT ROAD, RICHARDSON, TX. Final price may vary with traffic, route, and wait time.
 -----------------------------
+[2025-10-18T01:43:32.005627] NEW BOOKING
+📍 Pickup: Times Square, NYC
+🏁 Dropoff: JFK Airport
+🕒 Time: now
+📞 Phone: (555) 000-1212
+💰 Fare: $40.52
+🧾 Notes: Standard metered fare applied
+🧠 Explanation: Estimated fare $40.52 for about 13.4 miles from Times Square, NYC to JFK Airport. Final price may vary with traffic, route, and wait time.
+-----------------------------
+[2025-10-18T01:47:51.577112] NEW BOOKING
+📍 Pickup: Times Square, NYC
+🏁 Dropoff: JFK Airport
+🕒 Time: now
+📞 Phone: (555) 000-1212
+💰 Fare: $40.52
+🧾 Notes: Standard metered fare applied
+🧠 Explanation: Estimated fare $40.52 for about 13.4 miles from Times Square, NYC to JFK Airport. Final price may vary with traffic, route, and wait time.
+-----------------------------
+[2025-10-18T18:49:42.919216] NEW BOOKING
+📍 Pickup: Times Square, NYC
+🏁 Dropoff: JFK Airport
+🕒 Time: now
+📞 Phone: (555) 000-1212
+💰 Fare: $40.52
+🧾 Notes: Standard metered fare applied
+🧠 Explanation: Estimated fare $40.52 for about 13.4 miles from Times Square, NYC to JFK Airport. Final price may vary with traffic, route, and wait time.
+-----------------------------
+[2025-10-18T18:53:38.715405] NEW BOOKING
+📍 Pickup: Times Square, NYC
+🏁 Dropoff: JFK Airport
+🕒 Time: now
+📞 Phone: (555) 000-1212
+💰 Fare: $40.52
+🧾 Notes: Standard metered fare applied
+🧠 Explanation: Estimated fare $40.52 for about 13.4 miles from Times Square, NYC to JFK Airport. Final price may vary with traffic, route, and wait time.
+-----------------------------
+[2025-10-18T18:53:57.411075] NEW BOOKING
+📍 Pickup: Times Square, NYC
+🏁 Dropoff: JFK Airport
+🕒 Time: now
+📞 Phone: (555) 000-1212
+💰 Fare: $40.52
+🧾 Notes: Standard metered fare applied
+🧠 Explanation: Estimated fare $40.52 for about 13.4 miles from Times Square, NYC to JFK Airport. Final price may vary with traffic, route, and wait time.
+-----------------------------
+[2025-10-18T19:33:47.256546] NEW BOOKING
+📍 Pickup: 8888 PARK LANE, DALLAS, TX
+🏁 Dropoff: 902 COIT ROAD, RICHARDSON, TX
+🕒 Time: 2025-10-28T19:33:00-05:00
+📞 Phone: 4699395677
+💰 Fare: $21.17
+🧾 Notes: Standard metered fare applied
+🧠 Explanation: Estimated fare $21.17 for about 6.5 miles from 8888 PARK LANE, DALLAS, TX to 902 COIT ROAD, RICHARDSON, TX. Final price may vary with traffic, route, and wait time.
+-----------------------------
